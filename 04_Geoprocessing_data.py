@@ -38,7 +38,6 @@ def speed_assignment(highway_type):
         'tertiary_link':     60  * 0.9,
         'unclassified':      50  * 0.9,
         'residential':       50  * 0.9,
-        'living street':     20  * 0.9,
     }
     return float(default_speeds.get(highway_type, 50))
 
