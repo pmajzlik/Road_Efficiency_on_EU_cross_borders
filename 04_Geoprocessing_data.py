@@ -6,12 +6,7 @@
 
 import arcpy
 import math
-import csv 
-from pyproj import Transformer
-import os
-from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
-import unicodedata
+
 
 arcpy.env.overwriteOutput = True
 
@@ -64,7 +59,7 @@ def add_speed_field(network_layer):
             row[1] = float(speed)
             cursor.updateRow(row)
     
-    arcpy.AddMessage("Field 'speed_kmh' has been successfully added and populated by road type.")
+    arcpy.AddMessage(f"Field 'speed_kmh' has been successfully added to the layer '{network_layer}' and populated by road type.")
     return network_layer
 
 
@@ -82,11 +77,11 @@ def add_length_and_travel_time_fields(network_layer):
     
     if travel_time_field not in fields:
         arcpy.AddField_management(network_layer, travel_time_field, "DOUBLE")
-        arcpy.AddMessage(f"Field '{travel_time_field}' has been added to the layer.")
+        arcpy.AddMessage(f"Field '{travel_time_field}' has been added to the layer '{network_layer}'.")
     
     if length_field not in fields:
         arcpy.AddField_management(network_layer, length_field, "DOUBLE")
-        arcpy.AddMessage(f"Field '{length_field}' has been added to the layer.")
+        arcpy.AddMessage(f"Field '{length_field}' has been added to the layer '{network_layer}'.")
 
 
 def calculate_travel_time(network_layer):
@@ -239,7 +234,7 @@ def main():
         snap_distance=250,   
         max_allowed_shift=500  
     )
-
+    arcpy.AddMessage(f"The attributes speed_kmh, length_km, TravelTime were added to the road layer '{network_layer}' and the settlements of the layer '{settlements_path}' were snapped.")
     arcpy.AddMessage("SCRIPT COMPLETED SUCCESSFULLY")
     arcpy.AddMessage("=" * 60)
 
