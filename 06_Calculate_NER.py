@@ -8,7 +8,6 @@ import arcpy
 import math
 import csv
 import pandas as pd
-from pyproj import Transformer
 import os
 from openpyxl import Workbook
 
@@ -241,8 +240,8 @@ def export_actual_times_to_excel(od_lines_fc, output_excel_path):
 
 def get_settlement_coordinates(input_fc, name_field="name"):
     """
-    Retrieves coordinates and country code of all settlements,
-    transforming to EPSG:3035 if needed.
+    Retrieves coordinates and country code of all settlements.
+    Coordinates are always returned in EPSG:3035.
 
     Parameters:
     input_fc (str): Path to the settlements feature class
@@ -254,33 +253,23 @@ def get_settlement_coordinates(input_fc, name_field="name"):
     sr = arcpy.Describe(input_fc).spatialReference
     arcpy.AddMessage(f"Layer coordinate system: {sr.name}")
 
-    transform_needed = sr.factoryCode == 4326
-    if transform_needed:
-        transformer = Transformer.from_crs("EPSG:4326", "EPSG:3035", always_xy=True)
+    
+    sr_3035 = arcpy.SpatialReference(3035)
 
     fields = [name_field, "SHAPE@X", "SHAPE@Y", "country"]
-    data   = []
+    data = []
 
-    with arcpy.da.SearchCursor(input_fc, fields) as cursor:
+    with arcpy.da.SearchCursor(input_fc, fields, spatial_reference=sr_3035) as cursor:
         for row in cursor:
             name, x, y, country = row
             if None in (x, y):
                 arcpy.AddMessage(f"Missing coordinates for {name}, skipping.")
                 continue
 
-            if transform_needed:
-                try:
-                    x_m, y_m = transformer.transform(x, y)
-                except Exception as e:
-                    arcpy.AddMessage(f"Transformation error for {name}: {e}")
-                    continue
-            else:
-                x_m, y_m = x, y
-
             data.append({
                 "name":    name,
-                "x":       x_m,
-                "y":       y_m,
+                "x":       x,
+                "y":       y,
                 "country": country if country else ""
             })
 
