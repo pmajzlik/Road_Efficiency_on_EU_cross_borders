@@ -84,10 +84,16 @@ def download_osm_data(bbox, timeout):
     arcpy.AddMessage(f"Downloading only these highway types: {', '.join(sorted(ALLOWED_HIGHWAY))}")
 
     response = requests.post(
-        "http://overpass-api.de/api/interpreter",
-        data={"data": overpass_query},
-        timeout=timeout,
-    )
+    "http://overpass-api.de/api/interpreter",
+    data={"data": overpass_query},
+    timeout=timeout,
+    headers={
+        "User-Agent": "Download_OSM_data/1.0 (geoinformatika@upol.cz)",
+        "Referer":    "https://www.geoinf.upol.cz/",
+        "Accept":     "application/json",
+        "Content-Type": "text/plain",
+    },
+)
     response.raise_for_status()
 
     elements    = response.json().get("elements", [])
@@ -197,7 +203,7 @@ def insert_roads(output_fc, elements, nodes):
                 geom  = arcpy.Polyline(array, spatial_ref)
                 cursor.insertRow([geom, str(elem["id"]), tags.get("highway", ""), tags.get("junction", "")])
                 count += 1
-                if count % 100 == 0:
+                if count % 5000 == 0:
                     arcpy.AddMessage(f"Processed {count} roads...")
             except Exception as e:
                 skipped += 1
@@ -265,7 +271,7 @@ def assign_country_to_places(output_places, country_polygons, out_gdb):
     country_polygons (str): Path to the country polygon feature class with the CNTR_CODE field
     out_gdb (str): Path to the geodatabase for temporary outputs
     """
-    arcpy.AddMessage("Přiřazuji kódy zemí sídlům pomocí prostorového joinu...")
+   
 
     joined = os.path.join(out_gdb, "places_joined_temp")
 
@@ -305,7 +311,7 @@ def assign_country_to_places(output_places, country_polygons, out_gdb):
                 missing += 1
                 arcpy.AddWarning(f"Code not found for place: {name}")
 
-    arcpy.AddMessage(f"Updated: {updated} settlements | No assignment: {missing} settlements")
+    arcpy.AddMessage(f"Updated: {updated} settlements")
     arcpy.Delete_management(joined)
     arcpy.AddMessage("Country codes were successfully assigned.")
 
@@ -348,14 +354,14 @@ def finalize_outputs(out_gdb, output_name, clipped_fc, clipped_places, temp_clip
     Renames clipped layers to their final names.
     Returns (path to roads, path to places).
     """
-    final_fc     = os.path.join(out_gdb, output_name)
+    final_fc     = os.path.join(out_gdb, output_name + "_roads")
     final_places = os.path.join(out_gdb, output_name + "_places")
 
     for path in (final_fc, final_places):
         if arcpy.Exists(path):
             arcpy.Delete_management(path)
 
-    arcpy.Rename_management(clipped_fc,     output_name)
+    arcpy.Rename_management(clipped_fc,     output_name + "_roads")
     arcpy.Rename_management(clipped_places, output_name + "_places")
 
     if temp_clip and arcpy.Exists(temp_clip):
