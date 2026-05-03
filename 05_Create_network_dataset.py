@@ -126,6 +126,12 @@ def build_network_dataset(roads_layer, gdb_path, network_name):
     arcpy.AddMessage(f"GDB:     {gdb_path}")
     arcpy.AddMessage(f"ND Path: {nd_path}")
     arcpy.AddMessage("SCRIPT COMPLETED SUCCESSFULLY")
+    arcpy.AddMessage("IMPORTANT – Manual Configuration Required The road features in the database already contain a pre-calculated travel duration for each segment (the TravelTime attribute). However, the Network Dataset does not use this information automatically — it must be explicitly registered as a cost input before any routing calculations can use it. You must complete the following steps manually in ArcGIS Pro:"
+    "1. Open the Network Dataset Properties and navigate to Travel Attributes → Costs. Add a new cost attribute representing travel time. " \
+    "2. Configure the evaluator for this attribute: select Field Script as the source type for edges, and enter !TravelTime! as the field expression. Confirm and save." \
+    "3. Run the Build Network geoprocessing tool to rebuild the updated network." \
+    "Do not proceed to the next step until the network has been successfully rebuilt.")
+
     arcpy.AddMessage("=" * 60)
     return nd_path
 
