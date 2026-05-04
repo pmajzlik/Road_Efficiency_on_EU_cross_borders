@@ -118,7 +118,7 @@ Creates and builds an ArcGIS **Network Dataset** from the preprocessed road laye
 **Outputs:**
 - A feature dataset containing the roads and a built Network Dataset
 
-> ⚠️ **Manual configuration required after this step:**  
+> **Manual configuration required after this step:**  
 > The `TravelTime` field must be registered as a cost attribute in the Network Dataset properties before solving. See the script's output messages for step-by-step instructions.
 
 ---
